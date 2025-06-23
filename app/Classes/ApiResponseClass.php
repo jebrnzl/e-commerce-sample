@@ -14,13 +14,13 @@ class ApiResponseClass
         //
     }
 
-    public static function rollback($e, $message = 'An error occurred while processing your request.')
+    public static function rollback($e, $message = 'An error occurred while processing your request.', $code = 500)
     {
         DB::rollBack();
-        self::throwException($e, $message);
+        self::throwException($e, $message, $code);
     }
 
-    public static function throwException($e, $message = 'An error occurred while processing your request.')
+    public static function throwException($e, $message = 'An error occurred while processing your request.', $code = 500)
     {
         Log::info($e);
         throw new HttpResponseException(
@@ -28,16 +28,16 @@ class ApiResponseClass
                 'success' => false,
                 'message' => $message,
                 'errors' => $e->getMessage()
-            ], 500)
+            ], $code)
         );
     }
 
-    public static function sendResponse($data, $message = 'Request processed successfully.')
+    public static function sendResponse($data, $message = 'Request processed successfully.', $code = 200)
     {
         return response()->json([
             'success' => true,
             'message' => $message,
             'data' => $data
-        ], 200);
+        ], $code);
     }
 }

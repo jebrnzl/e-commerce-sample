@@ -22,13 +22,8 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $data = $this->productRepository->index();
-
-        return ApiResponseClass::sendResponse(
-            ProductResource::collection($data),
-            'Products retrieved successfully',
-            200
-        );
+        $products = $this->productRepository->index();
+        return view('products.index', compact('products'));
     }
 
     /**
@@ -36,7 +31,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        return view('products.create');
     }
 
     /**
@@ -44,23 +39,11 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        $details = [
-            'name' => $request->name,
-            'details' => $request->details
-        ];
-
-        DB::beginTransaction();
-        try {
-            $product = $this->productRepository->store($details);
-            DB::commit();
-            return ApiResponseClass::sendResponse(
-                new ProductResource($product),
-                'Product created successfully',
-                201
-            );
-        } catch (\Exception $e) {
-            return ApiResponseClass::rollback($e, 'An error occurred while creating the product.');
-        }
+        $product = new Product();
+        $product->name = $request->name;
+        $product->details = $request->details;
+        $product->save();
+        return redirect()->route('products.index')->with('success', 'Product created successfully');
     }
 
     /**
@@ -80,7 +63,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-
+        return view('products.edit', compact('product'));
     }
 
     /**
@@ -88,22 +71,10 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        $updateDetails = [
-            'name' => $request->name,
-            'details' => $request->details
-        ];
-        DB::beginTransaction();
-        try {
-            $product = $this->productRepository->update($product->id, $updateDetails);
-            DB::commit();
-            return ApiResponseClass::sendResponse(
-                new ProductResource($product),
-                'Product updated successfully',
-                200
-            );
-        } catch (\Exception $e) {
-            return ApiResponseClass::rollback($e, 'An error occurred while updating the product.');
-        }
+        $product->name = $request->name;
+        $product->details = $request->details;
+        $product->save();
+        return redirect()->route('products.index')->with('success', 'Product updated successfully');
     }
 
     /**
@@ -111,6 +82,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        //
+        $product->delete();
+        return redirect()->route('products.index')->with('success', 'Product deleted successfully');
     }
 }
